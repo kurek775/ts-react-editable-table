@@ -135,4 +135,14 @@
     text-align: center;
     padding: 14px;
   }
+  .error {
+    border: 1px solid #e74c3c;
+  }
+  
+  .error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+  }
   

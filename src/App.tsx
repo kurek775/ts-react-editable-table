@@ -2,7 +2,9 @@ import { useState } from "react";
 import Table from "./components/Table";
 
 function App() {
-  const headers = ["Name", "Age", "City"];
+  const headers =[  { key: 'Name', type: 'text', required: true },
+    { key: 'Age', type: 'number', required: true },
+    { key: 'City', type: 'text', disabled: false }];
   const [editable, setEditable] = useState<boolean>(false);
   type DataRow = Record<string, string | number>;
 
@@ -46,7 +48,7 @@ function App() {
 
   return (
     <div>
-      <button className="action-button" onClick={() => setEditable(!editable)}>
+      <button className="control-button" onClick={() => setEditable(!editable)}>
         {editable ? "STORNO" : "EDIT"}
       </button>
       <Table
