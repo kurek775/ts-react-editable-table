@@ -6,10 +6,10 @@ type TableProps = {
   initialData: Array<Record<string, any>>;
   onSubmit: (data: Array<Record<string, any>>) => void;
   editable?: boolean;
-  actions?: boolean; // Enable actions column
+  actions?: boolean;
 };
 
-const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable = true, actions = false }) => {
+const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable = false, actions = false}) => {
   const [data, setData] = useState(initialData);
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     headers.reduce((acc, header) => ({ ...acc, [header]: '' }), {})

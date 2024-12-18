@@ -19,9 +19,7 @@ function App() {
 
   return (
     <div>
-      <h1>Editable Table</h1>
-      {editable ? <div>editable</div> : <div>needitable</div>}
-      <button onClick={() => setEditable(!editable)}>AHOJ</button>
+      <button className="action-button" onClick={() => setEditable(!editable)}>{editable ? 'STORNO':'EDIT'}</button>
       <Table
         initialData={data}
         headers={headers}
