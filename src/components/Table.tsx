@@ -264,7 +264,7 @@ export const Table: React.FC<TableProps> = ({
       </table>
       {(editable && Boolean(onSubmit) ) && (
         <button
-          disabled={isFiltered || Boolean(sortConfig) ? true : false}
+          disabled={isFiltered || Boolean(sortConfig)}
           type="submit"
           className={`action-button submit modern-submit ${
             isFiltered || Boolean(sortConfig) ? "disabled" : ""
