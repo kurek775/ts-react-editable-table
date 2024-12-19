@@ -31,7 +31,7 @@ export const Table: React.FC<TableProps> = ({
   keyVal,
   initialData,
   onSubmit,
-  editable = true,
+  editable = false,
   actions = false,
   text = {
     delete: "DELETE",
