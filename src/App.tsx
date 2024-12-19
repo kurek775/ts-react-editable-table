@@ -1,10 +1,18 @@
 import { useState } from "react";
-import {Table, HeaderConfig} from "./components/Table";
+import { Table, HeaderConfig } from "./components/Table";
 
 function App() {
-  const headers: HeaderConfig[] =[  { key: 'Name', type: 'text', required: true },
-    { key: 'Age', type: 'number', required: true },
-    { key: 'City', type: 'text', disabled: true, filterDisabled: true, sorterDisabled: true }];
+  const headers: HeaderConfig[] = [
+    { key: "Name", type: "text", required: true },
+    { key: "Age", type: "number", required: true },
+    {
+      key: "City",
+      type: "text",
+      disabled: true,
+      filterDisabled: true,
+      sorterDisabled: true,
+    },
+  ];
   const [editable, setEditable] = useState<boolean>(false);
   type DataRow = Record<string, string | number>;
 
@@ -52,6 +60,7 @@ function App() {
         {editable ? "STORNO" : "EDIT"}
       </button>
       <Table
+        keyVal="id"
         initialData={data}
         headers={headers}
         onSubmit={handleSubmit}
