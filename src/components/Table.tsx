@@ -1,25 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import './Table.css';
+import React, { useState, useEffect } from "react";
+import "./Table.css";
 
-type HeaderConfig = {
+export type HeaderConfig = {
   key: string;
+  type: string;
+  disabled?: boolean;
   required?: boolean;
+  filterDisabled?: boolean;
+  sorterDisabled?: boolean;
 };
 
-type TableProps = {
+export type TableProps = {
   headers: HeaderConfig[];
   initialData: Array<Record<string, any>>;
   onSubmit: (data: Array<Record<string, any>>) => void;
   editable?: boolean;
-  actions?: boolean; // Enable actions column
+  actions?: boolean; 
 };
 
-const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable = true, actions = false }) => {
+export const Table: React.FC<TableProps> = ({
+  headers,
+  initialData,
+  onSubmit,
+  editable = true,
+  actions = false,
+}) => {
   const [data, setData] = useState(initialData);
   const [filters, setFilters] = useState<Record<string, string>>(() =>
-    headers.reduce((acc, header) => ({ ...acc, [header.key]: '' }), {})
+    headers.reduce((acc, header) => ({ ...acc, [header.key]: "" }), {})
   );
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [isFiltered,setIsFiltered]= useState<boolean>(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
   const [errors, setErrors] = useState<Array<Record<string, string>>>([]);
 
   const handleDelete = (rowIndex: number) => {
@@ -28,7 +42,10 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
   };
 
   const handleAdd = () => {
-    const newRow = headers.reduce((acc, header) => ({ ...acc, [header.key]: '' }), {});
+    const newRow = headers.reduce(
+      (acc, header) => ({ ...acc, [header.key]: "" }),
+      {}
+    );
     setData([...data, newRow]);
   };
 
@@ -36,11 +53,12 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
     const updatedData = [...data];
     updatedData[rowIndex][key] = value;
     setData(updatedData);
-
-    // Clear error if valid
     const updatedErrors = [...errors];
     if (headers.find((header) => header.key === key)?.required && !value) {
-      updatedErrors[rowIndex] = { ...updatedErrors[rowIndex], [key]: 'This field is required' };
+      updatedErrors[rowIndex] = {
+        ...updatedErrors[rowIndex],
+        [key]: "This field is required",
+      };
     } else {
       delete updatedErrors[rowIndex]?.[key];
     }
@@ -53,7 +71,7 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
       const rowErrors: Record<string, string> = {};
       headers.forEach((header) => {
         if (header.required && !row[header.key]) {
-          rowErrors[header.key] = 'This field is required';
+          rowErrors[header.key] = "This field is required";
         }
       });
       return rowErrors;
@@ -66,24 +84,27 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
 
   const handleSort = (key: string) => {
     if (sortConfig && sortConfig.key === key) {
-      if (sortConfig.direction === 'asc') {
+      if (sortConfig.direction === "asc") {
         const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? 1 : -1));
-        setSortConfig({ key, direction: 'desc' });
+        setSortConfig({ key, direction: "desc" });
         setData(sortedData);
       } else {
         setSortConfig(null);
-        setData([...initialData]); // Reset to initial data
+        setData([...initialData]); 
       }
     } else {
       const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? -1 : 1));
-      setSortConfig({ key, direction: 'asc' });
+      setSortConfig({ key, direction: "asc" });
       setData(sortedData);
     }
   };
 
   const filteredData = data.filter((row) =>
     headers.every((header) =>
-      row[header.key]?.toString().toLowerCase().includes(filters[header.key].toLowerCase())
+      row[header.key]
+        ?.toString()
+        .toLowerCase()
+        .includes(filters[header.key].toLowerCase())
     )
   );
 
@@ -95,6 +116,11 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
     setData(initialData);
   }, [initialData]);
 
+  useEffect(() => {
+    const f = Object.values(filters).some((value) => value.trim() !== "");
+    setIsFiltered(f);
+  }, [filters]);
+
   return (
     <form className="table-container" onSubmit={handleSubmit}>
       <table className="styled-table modern">
@@ -104,24 +130,30 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
               <th key={index}>
                 <div className="header-container">
                   <span className="header-label">{header.key}</span>
-                  <div className="header-controls">
-                    <input
-                      type="text"
-                      value={filters[header.key] || ''}
-                      onChange={(e) => handleFilterChange(header.key, e.target.value)}
-                      className="filter-input"
-                    />
+                  {!header.sorterDisabled && (
                     <button
                       type="button"
                       onClick={() => handleSort(header.key)}
                       className="sort-button"
                     >
                       {sortConfig?.key === header.key
-                        ? sortConfig.direction === 'asc'
-                          ? '▲'
-                          : '▼'
-                        : '⇅'}
+                        ? sortConfig.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : "⇅"}
                     </button>
+                  )}
+                  <div className="header-controls">
+                    {!header.filterDisabled && (
+                      <input
+                        type="text"
+                        value={filters[header.key] || ""}
+                        onChange={(e) =>
+                          handleFilterChange(header.key, e.target.value)
+                        }
+                        className="filter-input"
+                      />
+                    )}
                   </div>
                 </div>
               </th>
@@ -134,21 +166,44 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
             <tr key={rowIndex} className="modern-row">
               {headers.map((header, colIndex) => (
                 <td key={colIndex}>
-                  <input
-                    className={`table-input modern-input ${errors[rowIndex]?.[header.key] ? 'error' : ''}`}
-                    type="text"
-                    value={row[header.key]?.toString() || ''}
-                    onChange={(e) => editable && handleInputChange(rowIndex, header.key, e.target.value)}
-                    readOnly={!editable}
-                  />
+                  {header.disabled ? (
+                    <input
+                      className={`table-input modern-input ${
+                        editable ? "disabled" : ""
+                      }`}
+                      type="text"
+                      value={row[header.key]?.toString() || ""}
+                      readOnly={true}
+                    />
+                  ) : (
+                    <input
+                      className={`table-input modern-input ${
+                        errors[rowIndex]?.[header.key] ? "error" : ""
+                      }`}
+                      type="text"
+                      value={row[header.key]?.toString() || ""}
+                      onChange={(e) =>
+                        editable &&
+                        handleInputChange(rowIndex, header.key, e.target.value)
+                      }
+                      readOnly={!editable}
+                    />
+                  )}
+
                   {errors[rowIndex]?.[header.key] && (
-                    <span className="error-message">{errors[rowIndex][header.key]}</span>
+                    <span className="error-message">
+                      {errors[rowIndex][header.key]}
+                    </span>
                   )}
                 </td>
               ))}
               {actions && (
                 <td className="actions-cell">
-                  <button type="button" onClick={() => handleDelete(rowIndex)} className="action-button delete modern-delete">
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(rowIndex)}
+                    className="action-button delete modern-delete"
+                  >
                     Delete
                   </button>
                 </td>
@@ -160,7 +215,11 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
           <tfoot>
             <tr>
               <td colSpan={headers.length + 1} className="footer-cell">
-                <button type="button" onClick={handleAdd} className="action-button add modern-add">
+                <button
+                  type="button"
+                  onClick={handleAdd}
+                  className="action-button add modern-add"
+                >
                   Add Row
                 </button>
               </td>
@@ -168,9 +227,17 @@ const Table: React.FC<TableProps> = ({ headers, initialData, onSubmit, editable 
           </tfoot>
         )}
       </table>
-      <button type="submit" className="action-button submit modern-submit">
-        Submit
-      </button>
+      {editable && (
+        <button
+          disabled={isFiltered || Boolean(sortConfig) ? true : false}
+          type="submit"
+          className={`action-button submit modern-submit ${
+            isFiltered || Boolean(sortConfig) ? "disabled" : ""
+          }`}
+        >
+          Submit
+        </button>
+      )}
     </form>
   );
 };

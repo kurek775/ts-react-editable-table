@@ -145,4 +145,8 @@
     margin-top: 4px;
     display: block;
   }
+
+  .disabled{
+    opacity: 0.4;
+  }
   
