@@ -52,6 +52,7 @@ function App() {
   const handleSubmit = (updatedData: Array<Record<string, any>>) => {
     console.log("Updated Data:", updatedData);
     setData(updatedData);
+    setEditable(false);
   };
 
   return (
