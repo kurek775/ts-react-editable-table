@@ -67,6 +67,11 @@ function App() {
         editable={editable}
         actions={editable}
       />
+      <Table
+        keyVal="id"
+        initialData={data}
+        headers={headers}
+      />
     </div>
   );
 }

@@ -20,7 +20,7 @@ export type TableProps = {
   keyVal: string;
   headers: HeaderConfig[];
   initialData: Array<Record<string, any>>;
-  onSubmit: (data: Array<Record<string, any>>) => void;
+  onSubmit?: (data: Array<Record<string, any>>) => void;
   editable?: boolean;
   actions?: boolean;
   text?: TextConfig;
@@ -81,6 +81,9 @@ export const Table: React.FC<TableProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!onSubmit) {
+      return;
+    }
     const newErrors = data.map((row) => {
       const rowErrors: Record<string, string> = {};
       headers.forEach((header) => {
@@ -259,7 +262,7 @@ export const Table: React.FC<TableProps> = ({
           </tfoot>
         )}
       </table>
-      {editable && (
+      {(editable && Boolean(onSubmit) ) && (
         <button
           disabled={isFiltered || Boolean(sortConfig) ? true : false}
           type="submit"
