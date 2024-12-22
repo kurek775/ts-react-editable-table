@@ -66,12 +66,11 @@ function App() {
         headers={headers}
         onSubmit={handleSubmit}
         editable={editable}
-        actions={editable}
-      />
-      <Table
-        keyVal="id"
-        initialData={data}
-        headers={headers}
+        actions={{
+          create: true,
+          edit: true,
+          delete: true,
+        }}
       />
     </div>
   );

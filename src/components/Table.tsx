@@ -16,13 +16,19 @@ export type TextConfig = {
   submit?: string;
 };
 
+export type TableActions = {
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+};
+
 export type TableProps = {
   keyVal: string;
   headers: HeaderConfig[];
   initialData: Array<Record<string, any>>;
   onSubmit?: (data: Array<Record<string, any>>) => void;
   editable?: boolean;
-  actions?: boolean;
+  actions: TableActions;
   text?: TextConfig;
 };
 
@@ -32,7 +38,11 @@ export const Table: React.FC<TableProps> = ({
   initialData,
   onSubmit,
   editable = false,
-  actions = false,
+  actions = {
+    delete: false,
+    create: false,
+    edit: true,
+  },
   text = {
     delete: "DELETE",
     addRow: "ADD ROW",
@@ -190,7 +200,7 @@ export const Table: React.FC<TableProps> = ({
                 </div>
               </th>
             ))}
-            {actions && <th></th>}
+            {actions.delete && editable && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -229,7 +239,7 @@ export const Table: React.FC<TableProps> = ({
                   )}
                 </td>
               ))}
-              {actions && (
+              {actions.delete && editable && (
                 <td className="actions-cell">
                   <button
                     type="button"
@@ -243,7 +253,7 @@ export const Table: React.FC<TableProps> = ({
             </tr>
           ))}
         </tbody>
-        {actions && (
+        {actions.create && editable && (
           <tfoot>
             <tr>
               <td colSpan={headers.length + 1} className="footer-cell">
@@ -262,17 +272,19 @@ export const Table: React.FC<TableProps> = ({
           </tfoot>
         )}
       </table>
-      {(editable && Boolean(onSubmit) ) && (
-        <button
-          disabled={isFiltered || Boolean(sortConfig)}
-          type="submit"
-          className={`action-button submit modern-submit ${
-            isFiltered || Boolean(sortConfig) ? "disabled" : ""
-          }`}
-        >
-          {text.submit}
-        </button>
-      )}
+      {editable &&
+        (actions.create || actions.delete || actions.edit) &&
+        Boolean(onSubmit) && (
+          <button
+            disabled={isFiltered || Boolean(sortConfig)}
+            type="submit"
+            className={`action-button submit modern-submit ${
+              isFiltered || Boolean(sortConfig) ? "disabled" : ""
+            }`}
+          >
+            {text.submit}
+          </button>
+        )}
     </form>
   );
 };
