@@ -3,8 +3,20 @@ import { Table, HeaderConfig } from "./components/Table";
 
 function App() {
   const headers: HeaderConfig[] = [
-    { key: "Name", type: "text", required: true },
-    { key: "Age", type: "number", required: true },
+    {
+      key: "Name",
+      type: "text",
+      required: true,
+      filterDisabled: true,
+      sorterDisabled: true,
+    },
+    {
+      key: "Age",
+      type: "number",
+      required: true,
+      filterDisabled: true,
+      sorterDisabled: true,
+    },
     {
       key: "City",
       type: "text",
