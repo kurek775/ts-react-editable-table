@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./Table.css";
 
 export type HeaderConfig = {
@@ -49,7 +49,7 @@ export const Table: React.FC<TableProps> = ({
     submit: "SUBMIT",
   },
 }) => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(() => ensureKeysExist(initialData));
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     headers.reduce((acc, header) => ({ ...acc, [header.key]: "" }), {})
   );
@@ -59,6 +59,16 @@ export const Table: React.FC<TableProps> = ({
     direction: "asc" | "desc";
   } | null>(null);
   const [errors, setErrors] = useState<Array<Record<string, string>>>([]);
+
+  // Ensure rows contain all keys from headers
+  function ensureKeysExist(rows: Array<Record<string, any>>) {
+    return rows.map((row) =>
+      headers.reduce(
+        (acc, header) => ({ ...acc, [header.key]: acc[header.key] ?? "" }),
+        row
+      )
+    );
+  }
 
   const handleDelete = (rowIndex: number) => {
     const updatedData = data.filter((_, index) => index !== rowIndex);
@@ -77,6 +87,7 @@ export const Table: React.FC<TableProps> = ({
     const updatedData = [...data];
     updatedData[rowIndex][key] = value;
     setData(updatedData);
+
     const updatedErrors = [...errors];
     if (headers.find((header) => header.key === key)?.required && !value) {
       updatedErrors[rowIndex] = {
@@ -91,9 +102,8 @@ export const Table: React.FC<TableProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!onSubmit) {
-      return;
-    }
+    if (!onSubmit) return;
+
     const newErrors = data.map((row) => {
       const rowErrors: Record<string, string> = {};
       headers.forEach((header) => {
@@ -104,6 +114,7 @@ export const Table: React.FC<TableProps> = ({
       return rowErrors;
     });
     setErrors(newErrors);
+
     if (newErrors.every((row) => Object.keys(row).length === 0)) {
       onSubmit(data);
     }
@@ -111,47 +122,58 @@ export const Table: React.FC<TableProps> = ({
 
   const handleSort = (key: string) => {
     if (sortConfig && sortConfig.key === key) {
-      if (sortConfig.direction === "asc") {
-        const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? 1 : -1));
-        setSortConfig({ key, direction: "desc" });
-        setData(sortedData);
-      } else {
-        setSortConfig(null);
-        const difData = data.filter(
-          (item) =>
-            !initialData.map((inData) => inData[keyVal]).includes(item[keyVal])
-        );
-        setData(initialData.concat(difData));
-      }
+      const sortedData = [...data].sort((a, b) =>
+        sortConfig.direction === "asc"
+          ? (b[key]?.toString() ?? "").localeCompare(a[key]?.toString() ?? "")
+          : (a[key]?.toString() ?? "").localeCompare(b[key]?.toString() ?? "")
+      );
+      setSortConfig((prev) =>
+        prev?.direction === "asc" ? { key, direction: "desc" } : null
+      );
+      setData(sortedData);
     } else {
-      const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? -1 : 1));
+      const sortedData = [...data].sort((a, b) =>
+        (a[key]?.toString() ?? "").localeCompare(b[key]?.toString() ?? "")
+      );
       setSortConfig({ key, direction: "asc" });
       setData(sortedData);
     }
   };
 
-  const filteredData = data.filter((row) =>
-    headers.every((header) =>
-      row[header.key]
-        ?.toString()
-        .toLowerCase()
-        .includes(filters[header.key].toLowerCase())
-    )
-  );
+  const filteredAndSortedData = useMemo(() => {
+    let result = [...data];
+    if (sortConfig) {
+      result = result.sort((a, b) =>
+        sortConfig.direction === "asc"
+          ? (a[sortConfig.key]?.toString() ?? "").localeCompare(
+              b[sortConfig.key]?.toString() ?? ""
+            )
+          : (b[sortConfig.key]?.toString() ?? "").localeCompare(
+              a[sortConfig.key]?.toString() ?? ""
+            )
+      );
+    }
+    result = result.filter((row) =>
+      headers.every((header) =>
+        (row[header.key]?.toString() ?? "")
+          .toLowerCase()
+          .includes(filters[header.key]?.toLowerCase() ?? "")
+      )
+    );
+    return result;
+  }, [data, headers, sortConfig, filters]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value });
   };
 
   useEffect(() => {
-    setData(
-      initialData.map((item, index) => ({ ...item, originalIndex: index }))
-    );
-  }, [initialData]);
+    setData(ensureKeysExist(initialData));
+  }, [initialData, headers]);
 
   useEffect(() => {
     if (!editable) {
-      setData(initialData);
+      setData(ensureKeysExist(initialData));
       setFilters(
         headers.reduce((acc, header) => ({ ...acc, [header.key]: "" }), {})
       );
@@ -204,7 +226,7 @@ export const Table: React.FC<TableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {filteredData.map((row, rowIndex) => (
+          {filteredAndSortedData.map((row, rowIndex) => (
             <tr key={rowIndex} className="modern-row">
               {headers.map((header, colIndex) => (
                 <td key={colIndex}>
@@ -258,7 +280,7 @@ export const Table: React.FC<TableProps> = ({
             <tr>
               <td colSpan={headers.length + 1} className="footer-cell">
                 <button
-                  disabled={isFiltered || Boolean(sortConfig) ? true : false}
+                  disabled={isFiltered || Boolean(sortConfig)}
                   type="button"
                   onClick={handleAdd}
                   className={`action-button add modern-add ${
