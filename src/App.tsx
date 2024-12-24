@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Table, HeaderConfig } from "./components/Table";
+//import Table from "./components/Table";
+import Table from "pk-editable-table-component";
 
 function App() {
-  const headers: HeaderConfig[] = [
+  const headers = [
     {
       key: "Name",
       type: "text",
@@ -73,7 +74,7 @@ function App() {
         {editable ? "STORNO" : "EDIT"}
       </button>
       <Table
-        keyVal="id"
+        keyVal="Name"
         initialData={data}
         headers={headers}
         onSubmit={handleSubmit}
