@@ -1,5 +1,4 @@
 import { useState } from "react";
-//import Table from "./components/Table";
 import Table from "pk-editable-table-component";
 
 function App() {
