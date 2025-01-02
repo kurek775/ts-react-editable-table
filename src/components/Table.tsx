@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Table.css";
 
 export type HeaderConfig = {
+  columnLabel?: string;
   key: string;
   type: string;
   disabled?: boolean;
@@ -144,9 +145,11 @@ export const Table: React.FC<TableProps> = ({
   };
 
   useEffect(() => {
-    setData(
-      initialData.map((item, index) => ({ ...item, originalIndex: index }))
-    );
+    if (initialData) {
+      setData(
+        initialData.map((item, index) => ({ ...item, originalIndex: index }))
+      );
+    }
   }, [initialData]);
 
   useEffect(() => {
@@ -171,7 +174,9 @@ export const Table: React.FC<TableProps> = ({
             {headers.map((header, index) => (
               <th key={index}>
                 <div className="header-container">
-                  <span className="header-label">{header.key}</span>
+                  <span className="header-label">
+                    {header?.columnLabel ?? header.key}
+                  </span>
                   {!header.sorterDisabled && (
                     <button
                       type="button"

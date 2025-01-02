@@ -1,9 +1,10 @@
 import { useState } from "react";
-import Table from "pk-editable-table-component";
+import Table from "./components/Table";
 
 function App() {
   const headers = [
     {
+      columnLabel: "Jméno",
       key: "Name",
       type: "text",
       required: true,
@@ -11,6 +12,7 @@ function App() {
       sorterDisabled: true,
     },
     {
+      columnLabel: "Věk",
       key: "Age",
       type: "number",
       required: true,
@@ -18,6 +20,7 @@ function App() {
       sorterDisabled: true,
     },
     {
+      columnLabel: "Město",
       key: "City",
       type: "text",
       disabled: true,
@@ -73,7 +76,7 @@ function App() {
         {editable ? "STORNO" : "EDIT"}
       </button>
       <Table
-        keyVal="Name"
+        keyVal="Id"
         initialData={data}
         headers={headers}
         onSubmit={handleSubmit}
