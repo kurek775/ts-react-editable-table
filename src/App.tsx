@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Table from "./components/Table";
+import Table, { HeaderConfig } from "./components/Table";
 
 function App() {
-  const headers = [
+  const headers: HeaderConfig[] = [
     {
       columnLabel: "Jméno",
       key: "Name",

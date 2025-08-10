@@ -7,13 +7,13 @@ export type EnumConfig = {
 };
 export type HeaderConfig = {
   columnLabel?: string;
-  enumConfig?: EnumConfig;
   key: string;
   type: ColumnType;
   disabled?: boolean;
   required?: boolean;
   filterDisabled?: boolean;
   sorterDisabled?: boolean;
+  enumConfig?: EnumConfig;
 };
 
 export type TextConfig = {
