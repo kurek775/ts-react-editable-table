@@ -121,9 +121,12 @@ export const Table: React.FC<TableProps> = ({
   };
 
   const handleSort = (key: string) => {
+    //TODO = fix null sorting
     if (sortConfig && sortConfig.key === key) {
       if (sortConfig.direction === "asc") {
-        const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? 1 : -1));
+        const sortedData = [...data].sort((a, b) =>
+          a[key] && b[key] && a[key] < b[key] ? 1 : -1
+        );
         setSortConfig({ key, direction: "desc" });
         setData(sortedData);
       } else {
@@ -135,7 +138,9 @@ export const Table: React.FC<TableProps> = ({
         setData(initialData.concat(difData));
       }
     } else {
-      const sortedData = [...data].sort((a, b) => (a[key] < b[key] ? -1 : 1));
+      const sortedData = [...data].sort((a, b) =>
+        a[key] && b[key] && a[key] < b[key] ? -1 : 1
+      );
       setSortConfig({ key, direction: "asc" });
       setData(sortedData);
     }
