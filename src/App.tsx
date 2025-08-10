@@ -9,59 +9,61 @@ function App() {
       type: "text",
       required: true,
       filterDisabled: true,
-      sorterDisabled: true,
+      sorterDisabled: false,
     },
     {
       columnLabel: "Věk",
       key: "Age",
       type: "number",
       required: true,
-      filterDisabled: true,
-      sorterDisabled: true,
+      filterDisabled: false,
+      sorterDisabled: false,
     },
     {
+      enumConfig: {
+        enumItems: ["Dragonstone", "King's Landing"],
+      },
       columnLabel: "Město",
       key: "City",
-      type: "text",
-      disabled: true,
+      type: "enum",
+      required: true,
+      disabled: false,
       filterDisabled: true,
       sorterDisabled: true,
     },
   ];
   const [editable, setEditable] = useState<boolean>(false);
-  type DataRow = Record<string, string | number>;
+  type DataRow = Record<string, string | number | null>;
 
   const [data, setData] = useState<DataRow[]>([
-    { Name: "Jon Snow", Age: 30, City: "Winterfell", House: "Stark" },
+    { Name: "Jon Snow", Age: 10, House: "Stark" },
     {
       Name: "Daenerys Targaryen",
-      Age: 25,
-      City: "Dragonstone",
+      Age: 124,
       House: "Targaryen",
     },
     {
       Name: "Tyrion Lannister",
-      Age: 40,
-      City: "Casterly Rock",
+      Age: null,
+      City: null,
       House: "Lannister",
     },
     {
       Name: "Cersei Lannister",
-      Age: 42,
+      Age: null,
       City: "King's Landing",
       House: "Lannister",
     },
-    { Name: "Arya Stark", Age: 18, City: "Winterfell", House: "Stark" },
-    { Name: "Sansa Stark", Age: 24, City: "Winterfell", House: "Stark" },
+    { Name: "Arya Stark", Age: null, House: "Stark" },
+    { Name: "Sansa Stark", Age: null, House: "Stark" },
     {
       Name: "Jaime Lannister",
-      Age: 42,
-      City: "Casterly Rock",
+      Age: null,
       House: "Lannister",
     },
-    { Name: "Bran Stark", Age: 20, City: "Winterfell", House: "Stark" },
-    { Name: "Samwell Tarly", Age: 29, City: "Horn Hill", House: "Tarly" },
-    { Name: "Theon Greyjoy", Age: 30, City: "Pyke", House: "Greyjoy" },
+    { Name: "Bran Stark", Age: null, House: "Stark" },
+    { Name: "Samwell Tarly", Age: null, House: "Tarly" },
+    { Name: "Theon Greyjoy", Age: null, House: "Greyjoy" },
   ]);
 
   const handleSubmit = (updatedData: Array<Record<string, any>>) => {

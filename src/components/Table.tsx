@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "./Table.css";
 
+export type ColumnType = "text" | "number" | "enum";
+export type EnumConfig = {
+  enumItems: string[];
+};
 export type HeaderConfig = {
   columnLabel?: string;
+  enumConfig?: EnumConfig;
   key: string;
-  type: string;
+  type: ColumnType;
   disabled?: boolean;
   required?: boolean;
   filterDisabled?: boolean;
@@ -26,8 +31,8 @@ export type TableActions = {
 export type TableProps = {
   keyVal: string;
   headers: HeaderConfig[];
-  initialData: Array<Record<string, any>>;
-  onSubmit?: (data: Array<Record<string, any>>) => void;
+  initialData: Array<Record<string, string | number | null>>;
+  onSubmit?: (data: Array<Record<string, string | number | null>>) => void;
   editable?: boolean;
   actions: TableActions;
   text?: TextConfig;
@@ -38,6 +43,7 @@ export const Table: React.FC<TableProps> = ({
   headers,
   initialData,
   onSubmit,
+
   editable = false,
   actions = {
     delete: false,
@@ -74,7 +80,11 @@ export const Table: React.FC<TableProps> = ({
     setData([...data, { ...newRow, [keyVal]: data.length * 5 + 9 }]);
   };
 
-  const handleInputChange = (rowIndex: number, key: string, value: any) => {
+  const handleInputChange = (
+    rowIndex: number,
+    key: string,
+    value: string | number
+  ) => {
     const updatedData = [...data];
     updatedData[rowIndex][key] = value;
     setData(updatedData);
@@ -132,12 +142,11 @@ export const Table: React.FC<TableProps> = ({
   };
 
   const filteredData = data.filter((row) =>
-    headers.every((header) =>
-      row[header.key]
-        ?.toString()
-        .toLowerCase()
-        .includes(filters[header.key].toLowerCase())
-    )
+    headers.every((header) => {
+      const cellValue = (row[header.key] ?? "").toString().toLowerCase();
+      const filterValue = (filters[header.key] ?? "").toString().toLowerCase();
+      return cellValue.includes(filterValue);
+    })
   );
 
   const handleFilterChange = (key: string, value: string) => {
@@ -213,8 +222,10 @@ export const Table: React.FC<TableProps> = ({
             <tr key={rowIndex} className="modern-row">
               {headers.map((header, colIndex) => (
                 <td key={colIndex}>
-                  {header.disabled ? (
+                  {header.disabled && (
                     <input
+                      id={header.key + "_view" + "_" + rowIndex}
+                      name={header.key + "_" + rowIndex}
                       className={`table-input modern-input ${
                         editable ? "disabled" : ""
                       }`}
@@ -222,11 +233,48 @@ export const Table: React.FC<TableProps> = ({
                       value={row[header.key]?.toString() || ""}
                       readOnly={true}
                     />
-                  ) : (
+                  )}
+                  {!header.disabled &&
+                    header.type == "enum" &&
+                    header.enumConfig?.enumItems && (
+                      <select
+                        onChange={(e) =>
+                          editable &&
+                          handleInputChange(
+                            rowIndex,
+                            header.key,
+                            e.target.value
+                          )
+                        }
+                        className={`table-input modern-input select-input ${
+                          errors[rowIndex]?.[header.key] && editable
+                            ? "error"
+                            : ""
+                        } ${editable ? "editable-input" : ""}`}
+                        id={header.key + "_select" + "_" + rowIndex}
+                        name={header.key + "_" + rowIndex}
+                        disabled={!editable}
+                        value={row[header.key]?.toString() || ""}
+                      >
+                        {header.enumConfig?.enumItems.length && (
+                          <option key="0" value=""></option>
+                        )}
+                        {header.enumConfig?.enumItems.map((value, index) => (
+                          <option key={index + 1} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  {!header.disabled && header.type == "text" && (
                     <input
+                      id={header.key + "_input" + "_" + rowIndex}
+                      name={header.key + "_" + rowIndex}
                       className={`table-input modern-input ${
-                        errors[rowIndex]?.[header.key] ? "error" : ""
-                      }`}
+                        errors[rowIndex]?.[header.key] && editable
+                          ? "error"
+                          : ""
+                      } ${editable ? "editable-input" : ""}`}
                       type="text"
                       value={row[header.key]?.toString() || ""}
                       onChange={(e) =>
@@ -236,11 +284,23 @@ export const Table: React.FC<TableProps> = ({
                       readOnly={!editable}
                     />
                   )}
-
-                  {errors[rowIndex]?.[header.key] && (
-                    <span className="error-message">
-                      {errors[rowIndex][header.key]}
-                    </span>
+                  {!header.disabled && header.type == "number" && (
+                    <input
+                      id={header.key + "_input" + "_" + rowIndex}
+                      name={header.key + "_" + rowIndex}
+                      className={`table-input modern-input ${
+                        errors[rowIndex]?.[header.key] && editable
+                          ? "error"
+                          : ""
+                      } ${editable ? "editable-input" : ""}`}
+                      type="number"
+                      value={row[header.key] || ""}
+                      onChange={(e) =>
+                        editable &&
+                        handleInputChange(rowIndex, header.key, e.target.value)
+                      }
+                      readOnly={!editable}
+                    />
                   )}
                 </td>
               ))}
