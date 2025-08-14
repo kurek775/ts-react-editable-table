@@ -36,12 +36,8 @@ function App() {
   type DataRow = Record<string, string | number | null>;
 
   const [data, setData] = useState<DataRow[]>([
-    { Name: "Jon Snow", Age: 10, House: "Stark" },
-    {
-      Name: "Daenerys Targaryen",
-      Age: 124,
-      House: "Targaryen",
-    },
+    { id: 1, Name: "Jon Snow", Age: 10, House: "Stark" },
+    { id: 0, Name: "Daenerys Targaryen", Age: 124, House: "Targaryen" },
     {
       Name: "Tyrion Lannister",
       Age: null,
@@ -49,6 +45,7 @@ function App() {
       House: "Lannister",
     },
     {
+      id: null,
       Name: "Cersei Lannister",
       Age: null,
       City: "King's Landing",
@@ -61,9 +58,9 @@ function App() {
       Age: null,
       House: "Lannister",
     },
-    { Name: "Bran Stark", Age: null, House: "Stark" },
-    { Name: "Samwell Tarly", Age: null, House: "Tarly" },
-    { Name: "Theon Greyjoy", Age: null, House: "Greyjoy" },
+    { id: 444, Name: "Bran Stark", Age: null, House: "Stark" },
+    { id: 555, Name: "Samwell Tarly", Age: null, House: "Tarly" },
+    { id: 555, Name: "Theon Greyjoy", Age: null, House: "Greyjoy" },
   ]);
 
   const handleSubmit = (updatedData: Array<Record<string, any>>) => {
@@ -78,7 +75,7 @@ function App() {
         {editable ? "STORNO" : "EDIT"}
       </button>
       <Table
-        keyVal="Id"
+        keyVal="id"
         initialData={data}
         headers={headers}
         onSubmit={handleSubmit}

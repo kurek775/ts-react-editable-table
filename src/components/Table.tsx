@@ -77,7 +77,7 @@ export const Table: React.FC<TableProps> = ({
       (acc, header) => ({ ...acc, [header.key]: "" }),
       {}
     );
-    setData([...data, { ...newRow, [keyVal]: data.length * 5 + 9 }]);
+    setData([...data, { ...newRow, [keyVal]: null }]);
   };
 
   const handleInputChange = (
