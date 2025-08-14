@@ -151,3 +151,7 @@
 .disabled {
   opacity: 0.4;
 }
+
+.selected {
+  background-color: #a1c7f0 !important;
+}

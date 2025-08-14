@@ -33,6 +33,8 @@ export type TableProps = {
   headers: HeaderConfig[];
   initialData: Array<Record<string, string | number | null>>;
   onSubmit?: (data: Array<Record<string, string | number | null>>) => void;
+  onRowDoubleClick?: (item: Record<string, string | number | null>) => void;
+  onRowClick?: (item: Record<string, string | number | null>) => void;
   editable?: boolean;
   actions: TableActions;
   text?: TextConfig;
@@ -43,7 +45,8 @@ export const Table: React.FC<TableProps> = ({
   headers,
   initialData,
   onSubmit,
-
+  onRowDoubleClick,
+  onRowClick,
   editable = false,
   actions = {
     delete: false,
@@ -157,6 +160,38 @@ export const Table: React.FC<TableProps> = ({
   const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value });
   };
+  const [firstClick, setFirstClick] = useState<boolean>(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const [selectedItem, setSelectedItem] = useState<Record<
+    string,
+    string | number | null
+  > | null>(null);
+  const handleRowClick = (
+    r: Record<string, string | number | null>,
+    i: number
+  ) => {
+    setSelectedIndex(i);
+    if (!editable && r[keyVal]) {
+      if (firstClick && selectedItem && selectedItem[keyVal] === r[keyVal]) {
+        handleDoubleClick(r);
+      } else {
+        setFirstClick(true);
+        setSelectedItem(r);
+        if (onRowClick) {
+          onRowClick(r);
+        }
+        setTimeout(() => {
+          setFirstClick(false);
+        }, 2000);
+      }
+    }
+  };
+  const handleDoubleClick = (r: Record<string, string | number | null>) => {
+    setFirstClick(false);
+    if (onRowDoubleClick) {
+      onRowDoubleClick(r);
+    }
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -224,7 +259,13 @@ export const Table: React.FC<TableProps> = ({
         </thead>
         <tbody>
           {filteredData.map((row, rowIndex) => (
-            <tr key={rowIndex} className="modern-row">
+            <tr
+              key={rowIndex}
+              className={`modern-row ${
+                !editable && selectedIndex === rowIndex ? "selected" : ""
+              }`}
+              onClick={() => handleRowClick(row, rowIndex)}
+            >
               {headers.map((header, colIndex) => (
                 <td key={colIndex}>
                   {header.disabled && (
