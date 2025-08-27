@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Table.css";
 
-export type ColumnType = "text" | "number" | "enum";
+export type ColumnType = "text" | "number" | "enum" | "boolean";
 export type EnumConfig = {
   enumItems: string[];
 };
@@ -27,14 +27,14 @@ export type TableActions = {
   edit: boolean;
   delete: boolean;
 };
-
+export type TableItem = Record<string, string | number | null | boolean>;
 export type TableProps = {
   keyVal: string;
   headers: HeaderConfig[];
-  initialData: Array<Record<string, string | number | null>>;
-  onSubmit?: (data: Array<Record<string, string | number | null>>) => void;
-  onRowDoubleClick?: (item: Record<string, string | number | null>) => void;
-  onRowClick?: (item: Record<string, string | number | null>) => void;
+  initialData: Array<TableItem>;
+  onSubmit?: (data: Array<TableItem>) => void;
+  onRowDoubleClick?: (item: TableItem) => void;
+  onRowClick?: (item: TableItem) => void;
   editable?: boolean;
   actions: TableActions;
   text?: TextConfig;
@@ -86,13 +86,14 @@ export const Table: React.FC<TableProps> = ({
   const handleInputChange = (
     rowIndex: number,
     key: string,
-    value: string | number
+    value: string | number | boolean | null
   ) => {
     const updatedData = [...data];
     updatedData[rowIndex][key] = value;
     setData(updatedData);
-    const updatedErrors = [...errors];
-    if (headers.find((header) => header.key === key)?.required && !value) {
+    const header = headers.find((header) => header.key === key);
+    const updatedErrors = header?.type !== "boolean" ? [...errors] : [];
+    if (header?.required && !value && header.type !== "boolean") {
       updatedErrors[rowIndex] = {
         ...updatedErrors[rowIndex],
         [key]: "This field is required",
@@ -111,7 +112,7 @@ export const Table: React.FC<TableProps> = ({
     const newErrors = data.map((row) => {
       const rowErrors: Record<string, string> = {};
       headers.forEach((header) => {
-        if (header.required && !row[header.key]) {
+        if (header.required && !row[header.key] && header.type !== "boolean") {
           rowErrors[header.key] = "This field is required";
         }
       });
@@ -162,14 +163,8 @@ export const Table: React.FC<TableProps> = ({
   };
   const [firstClick, setFirstClick] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-  const [selectedItem, setSelectedItem] = useState<Record<
-    string,
-    string | number | null
-  > | null>(null);
-  const handleRowClick = (
-    r: Record<string, string | number | null>,
-    i: number
-  ) => {
+  const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+  const handleRowClick = (r: TableItem, i: number) => {
     setSelectedIndex(i);
     if (!editable && r[keyVal]) {
       if (firstClick && selectedItem && selectedItem[keyVal] === r[keyVal]) {
@@ -186,7 +181,7 @@ export const Table: React.FC<TableProps> = ({
       }
     }
   };
-  const handleDoubleClick = (r: Record<string, string | number | null>) => {
+  const handleDoubleClick = (r: TableItem) => {
     setFirstClick(false);
     if (onRowDoubleClick) {
       onRowDoubleClick(r);
@@ -226,7 +221,7 @@ export const Table: React.FC<TableProps> = ({
                   <span className="header-label">
                     {header?.columnLabel ?? header.key}
                   </span>
-                  {!header.sorterDisabled && (
+                  {!header.sorterDisabled && !editable && (
                     <button
                       type="button"
                       onClick={() => handleSort(header.key)}
@@ -240,7 +235,7 @@ export const Table: React.FC<TableProps> = ({
                     </button>
                   )}
                   <div className="header-controls">
-                    {!header.filterDisabled && (
+                    {!header.filterDisabled && !editable && (
                       <input
                         type="text"
                         value={filters[header.key] || ""}
@@ -340,12 +335,35 @@ export const Table: React.FC<TableProps> = ({
                           : ""
                       } ${editable ? "editable-input" : ""}`}
                       type="number"
-                      value={row[header.key] || ""}
+                      value={(row[header.key] as number) ?? ""}
                       onChange={(e) =>
                         editable &&
                         handleInputChange(rowIndex, header.key, e.target.value)
                       }
                       readOnly={!editable}
+                    />
+                  )}
+                  {!header.disabled && header.type === "boolean" && (
+                    <input
+                      disabled={!editable}
+                      id={`${header.key}_input_${rowIndex}`}
+                      name={`${header.key}_${rowIndex}`}
+                      className={`table-input modern-input ${
+                        errors[rowIndex]?.[header.key] && editable
+                          ? "error"
+                          : ""
+                      } ${editable ? "editable-input" : ""}`}
+                      type="checkbox"
+                      checked={Boolean(row[header.key])}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        editable &&
+                        handleInputChange(
+                          rowIndex,
+                          header.key,
+                          e.target.checked
+                        )
+                      }
                     />
                   )}
                 </td>

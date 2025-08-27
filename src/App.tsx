@@ -20,6 +20,14 @@ function App() {
       sorterDisabled: false,
     },
     {
+      columnLabel: "Chytrý",
+      key: "smart",
+      type: "boolean",
+      required: true,
+      filterDisabled: true,
+      sorterDisabled: true,
+    },
+    {
       enumConfig: {
         enumItems: ["Dragonstone", "King's Landing"],
       },
@@ -33,13 +41,19 @@ function App() {
     },
   ];
   const [editable, setEditable] = useState<boolean>(false);
-  type DataRow = Record<string, string | number | null>;
+  type DataRow = Record<string, string | number | null | boolean>;
 
   const [data, setData] = useState<DataRow[]>([
-    { id: 1, Name: "Jon Snow", Age: 10, House: "Stark" },
-    { id: 444, Name: "Bran Stark", Age: null, House: "Stark" },
-    { id: 555, Name: "Samwell Tarly", Age: null, House: "Tarly" },
-    { id: 5545, Name: "Theon Greyjoy", Age: null, House: "Greyjoy" },
+    { id: 1, Name: "Jon Snow", Age: 10, House: "Stark", smart: true },
+    { id: 444, Name: "Bran Stark", Age: null, House: "Stark", smart: false },
+    { id: 555, Name: "Samwell Tarly", Age: null, House: "Tarly", smart: false },
+    {
+      id: 5545,
+      Name: "Theon Greyjoy",
+      Age: null,
+      House: "Greyjoy",
+      smart: true,
+    },
   ]);
 
   const handleSubmit = (updatedData: Array<Record<string, any>>) => {
